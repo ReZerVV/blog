@@ -28,6 +28,7 @@ import { UpdatePostDto } from './dto/update-post.dto';
 import { PostDto, mapToPostDto } from './dto/post.dto';
 import { PostWithLikes } from './types';
 import { LikesService } from './likes/likes.service';
+import { ParseIntWithDefaultPipe } from 'src/pipes';
 
 @Controller('posts')
 export class PostsController {
@@ -39,13 +40,16 @@ export class PostsController {
 
     @Post()
     @HttpCode(HttpStatus.CREATED)
-    @UseInterceptors(FileInterceptor('media'))
     @UseGuards(JwtAuthGuard)
+    @UseInterceptors(FileInterceptor('media'))
     async create(
         @User() user: UserWithToken,
-        @UploadedFile('media') media: Express.Multer.File,
+        @UploadedFile() media: Express.Multer.File,
         @Body() dto: CreatePostDto,
     ): Promise<{ post: PostDto }> {
+        console.log(media);
+        console.log(dto);
+        if (!media) throw new BadRequestException('The "media" prop is required');
         const mediaFileName = await this.fileService.upload(media);
         const post: PostWithLikes = await this.postsService.create(
             user.id,
@@ -62,11 +66,9 @@ export class PostsController {
         @User() user: UserWithToken,
         @Query('page', ParseIntPipe) page: number,
         @Query('limit', ParseIntPipe) limit: number,
-        @Query('query') query: string,
-        @Query('author', ParseIntPipe) authorId: number,
+        @Query('query') query?: string,
+        @Query('author', new ParseIntWithDefaultPipe(null)) authorId?: number,
     ): Promise<{ posts: PostDto[] }> {
-        if (!page || !limit)
-            throw new BadRequestException('Page, limit query parameter is a required');
         const posts: PostWithLikes[] = await this.postsService.getAll(page, limit, query, authorId);
         return { posts: posts.map((post) => mapToPostDto(post, user)) };
     }
@@ -90,7 +92,7 @@ export class PostsController {
         @Param('id', ParseIntPipe) postId: number,
     ): Promise<void> {
         const post: PostWithLikes = await this.postsService.getById(postId);
-        if (post) throw new NotFoundException('Post with given id is not found');
+        if (!post) throw new NotFoundException('Post with given id is not found');
         if (post.author.id != user.id)
             throw new ForbiddenException('You do not have permission to delete this post');
         await this.postsService.delete(postId);

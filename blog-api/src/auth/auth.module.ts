@@ -6,6 +6,7 @@ import { PassportModule } from '@nestjs/passport';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { JwtAuthStrategy, GoogleOAuthStrategy } from './strategies';
 import { UsersModule } from 'src/users/users.module';
+import { TokensService } from 'src/users/tokens/tokens.service';
 
 @Module({
     imports: [

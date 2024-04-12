@@ -6,16 +6,17 @@ export class UserDto {
     lastName: string;
     email: string;
     avatar: string;
-    followed: boolean;
 }
 
-export function mapToUserDto(user: User, curUser: User = null): UserDto {
+export function mapToUserDto(user: User): UserDto {
+    if (!user) {
+        return null;
+    }
     return {
         id: user.id,
         firstName: user.firstName,
         lastName: user.lastName,
         email: user.email,
         avatar: user.avatar,
-        followed: false,
     };
 }

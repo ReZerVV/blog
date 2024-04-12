@@ -1,24 +1,23 @@
 import {
-    Controller,
-    Delete,
     Get,
     HttpCode,
     HttpStatus,
     Put,
+    Delete,
     UploadedFile,
     UseGuards,
     UseInterceptors,
+    Controller,
 } from '@nestjs/common';
-import { JwtAuthGuard } from 'src/auth/guards';
-import { UserDto, mapToUserDto } from '../dto';
-import { FileInterceptor } from '@nestjs/platform-express';
-import { UsersService } from '../users.service';
 import { User } from 'src/auth/decorators/user.decorator';
-import { UserWithToken } from '../types';
+import { JwtAuthGuard } from 'src/auth/guards';
+import { FileInterceptor } from '@nestjs/platform-express';
 import { FilesService } from 'src/files/files.service';
+import { UsersService } from '../users.service';
+import { UserWithToken } from '../types';
+import { UserDto, mapToUserDto } from '../dto';
 
-@Controller('users/profile')
-@UseGuards(JwtAuthGuard)
+@Controller('profile')
 export class ProfileController {
     constructor(
         private readonly usersService: UsersService,
@@ -26,13 +25,21 @@ export class ProfileController {
     ) {}
 
     @Get()
-    @HttpCode(HttpStatus.OK)
-    async profile(@User() user: UserWithToken): Promise<{ user: UserDto }> {
+    @UseGuards(JwtAuthGuard)
+    async getProfile(@User() user: UserWithToken): Promise<{ user: UserDto }> {
         return { user: mapToUserDto(user) };
+    }
+
+    @Delete()
+    @HttpCode(HttpStatus.NO_CONTENT)
+    @UseGuards(JwtAuthGuard)
+    async removeProfile(@User() user: UserWithToken): Promise<void> {
+        await this.usersService.remove(user.id);
     }
 
     @Put('avatar')
     @HttpCode(HttpStatus.OK)
+    @UseGuards(JwtAuthGuard)
     @UseInterceptors(FileInterceptor('avatar'))
     async changeAvatar(
         @User() user: UserWithToken,
@@ -45,7 +52,9 @@ export class ProfileController {
 
     @Delete('avatar')
     @HttpCode(HttpStatus.OK)
+    @UseGuards(JwtAuthGuard)
     async removeAvatar(@User() user: UserWithToken): Promise<{ user: UserDto }> {
+        await this.filesService.remove(user.avatar);
         user.avatar = null;
         user = await this.usersService.update(user);
         return { user: mapToUserDto(user) };
