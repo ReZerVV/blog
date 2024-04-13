@@ -81,6 +81,8 @@ export class PostsController {
     ): Promise<{ post: PostDto }> {
         const post: PostWithLikes = await this.postsService.getById(postId);
         if (!post) throw new NotFoundException('Post with given id is not found');
+        if (!(await this.postsService.hasView(user.id, post.id)))
+            await this.postsService.view(user.id, post.id);
         return { post: mapToPostDto(post, user) };
     }
 

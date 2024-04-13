@@ -78,4 +78,24 @@ export class PostsService {
             },
         })) as PostWithLikes;
     }
+
+    async hasView(userId: number, postId: number): Promise<boolean> {
+        return (
+            (await this.prismaService.view.findUnique({
+                where: {
+                    authorId: userId,
+                    postId,
+                },
+            })) != null
+        );
+    }
+
+    async view(userId: number, postId: number): Promise<void> {
+        await this.prismaService.view.create({
+            data: {
+                author: { connect: { id: userId } },
+                post: { connect: { id: postId } },
+            },
+        });
+    }
 }

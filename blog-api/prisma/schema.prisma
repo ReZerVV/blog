@@ -14,30 +14,19 @@ datasource db {
 }
 
 model User {
-  id           Int        @id @default(autoincrement())
-  email        String     @unique
-  firstName    String     @map("first_name")
-  lastName     String     @map("last_name")
-  passwordHash String     @map("password_hash")
+  id           Int       @id @default(autoincrement())
+  email        String    @unique
+  firstName    String    @map("first_name")
+  lastName     String    @map("last_name")
+  passwordHash String    @map("password_hash")
   avatar       String?
   token        Token?
   comments     Comment[]
   posts        Post[]
   likes        Like[]
-  following    Follower[] @relation("UserFollows")
-  followers    Follower[] @relation("UserFollowedBy")
+  veiws        View[]
 
   @@map("users")
-}
-
-model Follower {
-  id         Int  @id @default(autoincrement())
-  user       User @relation("UserFollows", fields: [userId], references: [id])
-  userId     Int  @unique @map("user_id")
-  follower   User @relation("UserFollowedBy", fields: [followerId], references: [id])
-  followerId Int  @unique @map("follower_id")
-
-  @@map("followers")
 }
 
 model Token {
@@ -59,6 +48,7 @@ model Post {
   description String
   comments    Comment[]
   likes       Like[]
+  veiws       View[]
 
   @@map("posts")
 }
@@ -82,4 +72,14 @@ model Like {
   postId   Int  @unique @map("post_id")
 
   @@map("likes")
+}
+
+model View {
+  id       Int  @id @default(autoincrement())
+  author   User @relation(fields: [authorId], references: [id])
+  authorId Int  @unique @map("author_id")
+  post     Post @relation(fields: [postId], references: [id])
+  postId   Int  @unique @map("post_id")
+
+  @@map("views")
 }
