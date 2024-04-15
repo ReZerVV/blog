@@ -35,7 +35,10 @@ import {
 import { CommentWith } from '../types';
 import { PostWith } from 'src/modules/posts/types';
 import { ParseIntWithDefaultPipe } from 'src/pipes';
+import { ApiBearerAuth, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
 
+@ApiBearerAuth()
+@ApiTags('comments')
 @Controller('comments')
 @UseGuards(JwtAuthGuard)
 export class CommentsController {
@@ -44,6 +47,9 @@ export class CommentsController {
         private readonly postsService: PostsService,
     ) {}
 
+    @ApiResponse({ status: 200, type: GetAllCommentResponse })
+    @ApiQuery({ name: 'postId', required: false })
+    @ApiQuery({ name: 'authorId', required: false })
     @Get()
     @HttpCode(HttpStatus.OK)
     async getAll(
@@ -54,6 +60,7 @@ export class CommentsController {
         return { comments: comments.map((comment) => mapToCommentDto(comment)) };
     }
 
+    @ApiResponse({ status: 201, type: CreateCommentResponse })
     @Post()
     @HttpCode(HttpStatus.CREATED)
     async create(
@@ -70,6 +77,7 @@ export class CommentsController {
         return { comment: mapToCommentDto(comment) };
     }
 
+    @ApiResponse({ status: 204 })
     @Delete(':id')
     @HttpCode(HttpStatus.NO_CONTENT)
     async remove(
@@ -83,6 +91,7 @@ export class CommentsController {
         await this.commentsService.remove(comment.id);
     }
 
+    @ApiResponse({ status: 201, type: UpdateCommentResponse })
     @Put(':id')
     @HttpCode(HttpStatus.OK)
     async update(

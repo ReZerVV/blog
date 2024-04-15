@@ -24,13 +24,17 @@ import {
     SignUpUserRequest,
     SignUpUserResponse,
 } from '../dto';
+import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 
 const REFRESH_TOKEN_COOKIE_NAME = 'refresh_token';
 
 @Controller('auth')
+@ApiTags('auth')
 export class AuthController {
     constructor(private readonly authService: AuthService) {}
 
+    @ApiOperation({ summary: 'Create new account' })
+    @ApiResponse({ status: 200, type: SignUpUserResponse })
     @Post('sign-up')
     @HttpCode(HttpStatus.OK)
     async signUp(
@@ -42,6 +46,7 @@ export class AuthController {
         return { accessToken };
     }
 
+    @ApiResponse({ status: 200, type: SignInUserResponse })
     @Post('sign-in')
     @HttpCode(HttpStatus.OK)
     async signIn(
@@ -53,6 +58,9 @@ export class AuthController {
         return { accessToken };
     }
 
+    @ApiBearerAuth()
+    @ApiOperation({ summary: 'Session termination' })
+    @ApiResponse({ status: 204 })
     @Post('sign-out')
     @HttpCode(HttpStatus.NO_CONTENT)
     @UseGuards(JwtAuthGuard)
@@ -61,6 +69,7 @@ export class AuthController {
         res.clearCookie(REFRESH_TOKEN_COOKIE_NAME);
     }
 
+    @ApiResponse({ status: 200, type: RefreshUserResponse })
     @Post('refresh')
     @HttpCode(HttpStatus.OK)
     async refresh(

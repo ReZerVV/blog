@@ -38,7 +38,10 @@ import {
     UpdatePostResponse,
     UpdatePostRequest,
 } from '../dto';
+import { ApiBearerAuth, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
 
+@ApiTags('posts')
+@ApiBearerAuth()
 @Controller('posts')
 @UseGuards(JwtAuthGuard)
 export class PostsController {
@@ -48,6 +51,7 @@ export class PostsController {
         private readonly likesService: LikesService,
     ) {}
 
+    @ApiResponse({ status: 201, type: CreatePostResponse })
     @Post()
     @HttpCode(HttpStatus.CREATED)
     @UseInterceptors(FileInterceptor('media'))
@@ -68,6 +72,12 @@ export class PostsController {
         return { post: mapToPostDto(post) };
     }
 
+    @ApiResponse({ status: 200, type: GetAllPostResponse })
+    @ApiQuery({ name: 'page', required: true })
+    @ApiQuery({ name: 'limit', required: true })
+    @ApiQuery({ name: 'query', required: false })
+    @ApiQuery({ name: 'favorites-for', required: false })
+    @ApiQuery({ name: 'author', required: false })
     @Get()
     @HttpCode(HttpStatus.OK)
     async getAll(
@@ -88,6 +98,7 @@ export class PostsController {
         return { posts: posts.map((post) => mapToPostDto(post, user)) };
     }
 
+    @ApiResponse({ status: 200, type: GetByIdResponse })
     @Get(':id')
     @HttpCode(HttpStatus.OK)
     async getById(
@@ -101,6 +112,7 @@ export class PostsController {
         return { post: mapToPostDto(post, user) };
     }
 
+    @ApiResponse({ status: 204 })
     @Delete(':id')
     @HttpCode(HttpStatus.NO_CONTENT)
     async delete(@User() user: UserWith, @Param('id', ParseIntPipe) postId: number): Promise<void> {
@@ -111,6 +123,7 @@ export class PostsController {
         await this.postsService.delete(postId);
     }
 
+    @ApiResponse({ status: 200, type: UpdatePostResponse })
     @Put(':id')
     @HttpCode(HttpStatus.OK)
     async update(
@@ -133,6 +146,7 @@ export class PostsController {
         return { post: mapToPostDto(post) };
     }
 
+    @ApiResponse({ status: 204 })
     @Put(':id/like')
     @HttpCode(HttpStatus.NO_CONTENT)
     async like(@User() user: UserWith, @Param('id', ParseIntPipe) postId: number): Promise<void> {
@@ -143,6 +157,7 @@ export class PostsController {
         await this.likesService.like(user.id, post.id);
     }
 
+    @ApiResponse({ status: 204 })
     @Put(':id/unlike')
     @HttpCode(HttpStatus.NO_CONTENT)
     async unlike(@User() user: UserWith, @Param('id', ParseIntPipe) postId: number): Promise<void> {

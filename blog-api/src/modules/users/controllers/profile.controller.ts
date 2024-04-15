@@ -32,7 +32,10 @@ import {
     DeleteAvatarProfileResponse,
 } from '../dto';
 import { ChangePasswordProfileRequest } from '../dto/change-password-profile.request';
+import { ApiBearerAuth, ApiResponse, ApiTags } from '@nestjs/swagger';
 
+@ApiTags('profile')
+@ApiBearerAuth()
 @Controller('profile')
 @UseGuards(JwtAuthGuard)
 export class ProfileController {
@@ -41,17 +44,21 @@ export class ProfileController {
         private readonly filesService: FilesService,
     ) {}
 
+    @ApiResponse({ status: 200, type: GetProfileResponse })
     @Get()
+    @HttpCode(HttpStatus.OK)
     async get(@User() user: UserWith): Promise<GetProfileResponse> {
         return { user: mapToUserDto(user) };
     }
 
+    @ApiResponse({ status: 204 })
     @Delete()
     @HttpCode(HttpStatus.NO_CONTENT)
     async remove(@User() user: UserWith): Promise<void> {
         await this.usersService.remove(user.id);
     }
 
+    @ApiResponse({ status: 200, type: UpdateProfileResponse })
     @Put()
     @HttpCode(HttpStatus.OK)
     async update(
@@ -66,6 +73,7 @@ export class ProfileController {
         return { user: mapToUserDto(user) };
     }
 
+    @ApiResponse({ status: 200, type: ChangePasswordProfileResponse })
     @Put('password')
     @HttpCode(HttpStatus.OK)
     async changePassword(
@@ -79,6 +87,7 @@ export class ProfileController {
         return { user: mapToUserDto(user) };
     }
 
+    @ApiResponse({ status: 200, type: ChangeAvatarProfileResponse })
     @Put('avatar')
     @HttpCode(HttpStatus.OK)
     @UseInterceptors(FileInterceptor('avatar'))
@@ -91,6 +100,7 @@ export class ProfileController {
         return { user: mapToUserDto(user) };
     }
 
+    @ApiResponse({ status: 200, type: DeleteAvatarProfileResponse })
     @Delete('avatar')
     @HttpCode(HttpStatus.OK)
     async deleteAvatar(@User() user: UserWith): Promise<DeleteAvatarProfileResponse> {
