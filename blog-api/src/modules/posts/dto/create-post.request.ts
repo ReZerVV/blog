@@ -1,5 +1,8 @@
+import { IsNotEmpty } from 'class-validator';
+
 export class CreatePostRequest {
-    media: Express.Multer.File;
+    @IsNotEmpty()
     title: string;
+    @IsNotEmpty()
     description: string;
 }

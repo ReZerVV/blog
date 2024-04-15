@@ -9,7 +9,7 @@ export class LikesService {
 
     async postHasUserLike(authorId: number, postId: number): Promise<boolean> {
         return (
-            (await this.prismaService.like.findUnique({
+            (await this.prismaService.like.findFirst({
                 where: { authorId, postId },
             })) != null
         );
